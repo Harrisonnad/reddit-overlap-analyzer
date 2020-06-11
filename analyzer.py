@@ -6,6 +6,7 @@ import time
 from resources.pushshift import Pushshift
 from resources.ascii import coffee
 from prettytable import PrettyTable
+import csv
 
 
 class Analyzer(object):
@@ -37,7 +38,6 @@ class Analyzer(object):
         Analyzes specified subreddits and
         outputs overlapping subreddits in order
         from highest to lowest.
-
         :param subreddit: Subreddit to analyze.
         :param start: The start date for range to analyze.
         :param end: The end date for range to analyze (default: Now).
@@ -75,9 +75,7 @@ class Analyzer(object):
             if x["author"] not in unique_authors
         ]
 
-        print(
-            f"Getting last 1000 submissions for {len(unique_authors)} users."
-        )
+        print(f"Getting last 1000 submissions for {len(unique_authors)} users.")
         print(coffee)
         print("Go grab some coffee. This is going to be a while.")
 
@@ -99,55 +97,62 @@ class Analyzer(object):
                     if submission["promoted"]:
                         continue
 
-                subreddits[submission["subreddit"]]["submissions"].append(
-                    submission
-                )
-                if (
-                    author
-                    not in subreddits[submission["subreddit"]]["authors"]
-                ):
-                    subreddits[submission["subreddit"]]["authors"].append(
-                        author
-                    )
+                subreddits[submission["subreddit"]]["submissions"].append(submission)
+                if author not in subreddits[submission["subreddit"]]["authors"]:
+                    subreddits[submission["subreddit"]]["authors"].append(author)
             # time.sleep(1)
 
         if subreddit in subreddits:
             subreddits.pop(subreddit, None)
 
-        results_table = PrettyTable()
-        results_table.field_names = [
-            "Subreddit",
-            "Submission Count",
-            "Unique Users",
-        ]
+        if output == "csv":
+            file_name = input("Enter file name ")
+            with open(f"{file_name}.csv", mode="w",) as csv_file:
+                field_names = ["Subreddit", "Submission Count", "Unique Users"]
+                writer = csv.writer(csv_file, delimiter="|")
+                writer.writerow(field_names)
+                for collected_subreddit in subreddits:
+                    writer.writerow(
+                        [
+                            collected_subreddit,
+                            len(subreddits[collected_subreddit]["submissions"]),
+                            len(subreddits[collected_subreddit]["authors"]),
+                        ]
+                    )
+        elif output == "Table":
+            results_table = PrettyTable()
+            results_table.field_names = [
+                "Subreddit",
+                "Submission Count" "Unique Users",
+            ]
 
-        for collected_subreddit in subreddits:
-            results_table.add_row(
-                [
-                    collected_subreddit,
-                    len(subreddits[collected_subreddit]["submissions"]),
-                    len(subreddits[collected_subreddit]["authors"]),
-                ]
+            for collected_subreddit in subreddits:
+                results_table.add_row(
+                    [
+                        collected_subreddit,
+                        len(subreddits[collected_subreddit]["submissions"]),
+                        len(subreddits[collected_subreddit]["authors"]),
+                    ]
+                )
+
+            if sort_by == "users":
+                results_table.sortby = "Unique Users"
+            elif sort_by == "submissions" or sort_by == "posts":
+                results_table.sortby = "Submission Count"
+            elif sort_by == "subreddit":
+                results_table.sortby = "Subreddit"
+            else:
+                raise Exception("Unsupported sort_by value provided.")
+
+            results_table.reversesort = True
+
+            print(
+                results_table.get_string(
+                    title=f"Overlapping Reddit Trends for r/{subreddit}",
+                    start=0,
+                    end=top,
+                )
             )
-
-        if sort_by == "users":
-            results_table.sortby = "Unique Users"
-        elif sort_by == "submissions" or sort_by == "posts":
-            results_table.sortby = "Submission Count"
-        elif sort_by == "subreddit":
-            results_table.sortby = "Subreddit"
-        else:
-            raise Exception("Unsupported sort_by value provided.")
-
-        results_table.reversesort = True
-
-        print(
-            results_table.get_string(
-                title=f"Overlapping Reddit Trends for r/{subreddit}",
-                start=0,
-                end=top,
-            )
-        )
 
 
 if __name__ == "__main__":

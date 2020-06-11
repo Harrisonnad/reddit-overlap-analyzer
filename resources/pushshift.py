@@ -14,12 +14,10 @@ class Pushshift(object):
             time.sleep(3)
             return self._request(endpoint, params=params, headers=headers)
         else:
-            raise Exception(
-                f"Received a {response.status_code} from Pushshift API."
-            )
+            raise Exception(f"Received a {response.status_code} from Pushshift API.")
 
     def get_reddit_submissions(
-        self, subreddit=None, start=None, end=None, author=None, limit=500
+        self, subreddit=None, start=None, end=None, author=None, limit=1000
     ):
         endpoint = "reddit/search/submission"
         params = {
