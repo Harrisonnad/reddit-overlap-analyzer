@@ -3,3 +3,7 @@
 .venv/
 .vscode/
 local.py
+.env/
+.pre-commit-config.yaml
+pyvenv.cfg 
+.include

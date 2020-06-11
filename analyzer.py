@@ -83,9 +83,8 @@ class Analyzer(object):
         subreddits = {}
 
         for author in unique_authors:
-            submissions = self.pushshift_client.get_reddit_submissions(author)
+            submissions = self.pushshift_client.get_reddit_author_data(author)
             authors[author] = submissions
-
             for submission in submissions:
                 try:
                     if submission["subreddit"] not in subreddits:
@@ -119,11 +118,12 @@ class Analyzer(object):
                             len(subreddits[collected_subreddit]["authors"]),
                         ]
                     )
-        elif output == "Table":
+        elif output == "table":
             results_table = PrettyTable()
             results_table.field_names = [
                 "Subreddit",
-                "Submission Count" "Unique Users",
+                "Submission Count",
+                "Unique Users",
             ]
 
             for collected_subreddit in subreddits:
