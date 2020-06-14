@@ -66,7 +66,7 @@ class Analyzer(object):
             raise Exception("Unsupported date format provided.")
 
         submissions = self.pushshift_client.get_reddit_submissions(
-            subreddit, start, end, limit=submissions
+            subreddit=subreddit, start=start, end=end, limit=submissions
         )
         unique_authors = []
         [
@@ -83,7 +83,7 @@ class Analyzer(object):
         subreddits = {}
 
         for author in unique_authors:
-            submissions = self.pushshift_client.get_reddit_submissions(author)
+            submissions = self.pushshift_client.get_reddit_submissions(author=author)
             authors[author] = submissions
 
             for submission in submissions:
@@ -105,7 +105,7 @@ class Analyzer(object):
         if subreddit in subreddits:
             subreddits.pop(subreddit, None)
 
-        if output == "csv":
+        if output.lower() == "csv":
             file_name = input("Enter file name ")
             with open(f"{file_name}.csv", mode="w",) as csv_file:
                 field_names = ["Subreddit", "Submission Count", "Unique Users"]
@@ -119,11 +119,12 @@ class Analyzer(object):
                             len(subreddits[collected_subreddit]["authors"]),
                         ]
                     )
-        elif output == "Table":
+        elif output.lower() == "table":
             results_table = PrettyTable()
             results_table.field_names = [
                 "Subreddit",
-                "Submission Count" "Unique Users",
+                "Submission Count",
+                "Unique Users",
             ]
 
             for collected_subreddit in subreddits:
@@ -134,6 +135,8 @@ class Analyzer(object):
                         len(subreddits[collected_subreddit]["authors"]),
                     ]
                 )
+        else:
+            return "Unsupported output type"
 
             if sort_by == "users":
                 results_table.sortby = "Unique Users"
