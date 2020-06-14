@@ -29,3 +29,8 @@ class Pushshift(object):
         }
         data = self._request(endpoint, params=params)
         return data["data"]
+
+    def get_reddit_author_data(self, author, limit=1000):
+        endpoint = "reddit/search/submission"
+        params = {"author": author, "limit": limit}
+        data = self._request(endpoint, params=params)
