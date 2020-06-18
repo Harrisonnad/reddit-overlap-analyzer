@@ -75,7 +75,9 @@ class Analyzer(object):
             if x["author"] not in unique_authors
         ]
 
-        print(f"Getting last 1000 submissions for {len(unique_authors)} users.")
+        print(
+            f"Getting last 1000 submissions for {len(unique_authors)} users."
+        )
         print(coffee)
         print("Go grab some coffee. This is going to be a while.")
 
@@ -96,9 +98,16 @@ class Analyzer(object):
                     if submission["promoted"]:
                         continue
 
-                subreddits[submission["subreddit"]]["submissions"].append(submission)
-                if author not in subreddits[submission["subreddit"]]["authors"]:
-                    subreddits[submission["subreddit"]]["authors"].append(author)
+                subreddits[submission["subreddit"]]["submissions"].append(
+                    submission
+                )
+                if (
+                    author
+                    not in subreddits[submission["subreddit"]]["authors"]
+                ):
+                    subreddits[submission["subreddit"]]["authors"].append(
+                        author
+                    )
             # time.sleep(1)
 
         if subreddit in subreddits:
@@ -106,7 +115,7 @@ class Analyzer(object):
 
         if output == "csv":
             file_name = input("Enter file name ")
-            with open(f"{file_name}.csv", mode="w",) as csv_file:
+            with open(f"{file_name}.csv", mode="w") as csv_file:
                 field_names = ["Subreddit", "Submission Count", "Unique Users"]
                 writer = csv.writer(csv_file, delimiter="|")
                 writer.writerow(field_names)
@@ -114,7 +123,9 @@ class Analyzer(object):
                     writer.writerow(
                         [
                             collected_subreddit,
-                            len(subreddits[collected_subreddit]["submissions"]),
+                            len(
+                                subreddits[collected_subreddit]["submissions"]
+                            ),
                             len(subreddits[collected_subreddit]["authors"]),
                         ]
                     )
