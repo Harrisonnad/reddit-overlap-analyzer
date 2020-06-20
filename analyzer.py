@@ -118,7 +118,6 @@ class Analyzer(object):
                     subreddits[submission["subreddit"]]["authors"].append(
                         author
                     )
-            # time.sleep(1)
 
         if subreddit in subreddits:
             subreddits.pop(subreddit, None)
