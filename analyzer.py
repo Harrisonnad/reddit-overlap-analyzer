@@ -69,13 +69,22 @@ class Analyzer(object):
             subreddit=subreddit, start=start, end=end, limit=submissions
         )
         unique_authors = []
-        [
-            unique_authors.append(x["author"])
-            for x in submissions
-            if x["author"] not in unique_authors
-        ]
+        while len(submissions) > 0:
 
-        print(f"Getting last 1000 submissions for {len(unique_authors)} users.")
+            [
+                unique_authors.append(x["author"])
+                for x in submissions
+                if x["author"] not in unique_authors
+            ]
+            print(len(submissions))
+            after = submissions[-1]["created_utc"]
+            submissions = self.pushshift_client.get_reddit_submissions(
+                subreddit=subreddit, start=after, end=end
+            )
+
+        print(
+            f"Getting last 1000 submissions for {len(unique_authors)} users."
+        )
         print(coffee)
         print("Go grab some coffee. This is going to be a while.")
 
@@ -83,7 +92,9 @@ class Analyzer(object):
         subreddits = {}
 
         for author in unique_authors:
-            submissions = self.pushshift_client.get_reddit_submissions(author=author)
+            submissions = self.pushshift_client.get_reddit_submissions(
+                author=author
+            )
             authors[author] = submissions
 
             for submission in submissions:
@@ -97,9 +108,16 @@ class Analyzer(object):
                     if submission["promoted"]:
                         continue
 
-                subreddits[submission["subreddit"]]["submissions"].append(submission)
-                if author not in subreddits[submission["subreddit"]]["authors"]:
-                    subreddits[submission["subreddit"]]["authors"].append(author)
+                subreddits[submission["subreddit"]]["submissions"].append(
+                    submission
+                )
+                if (
+                    author
+                    not in subreddits[submission["subreddit"]]["authors"]
+                ):
+                    subreddits[submission["subreddit"]]["authors"].append(
+                        author
+                    )
             # time.sleep(1)
 
         if subreddit in subreddits:
@@ -107,15 +125,17 @@ class Analyzer(object):
 
         if output.lower() == "csv":
             file_name = input("Enter file name ")
-            with open(f"{file_name}.csv", mode="w",) as csv_file:
+            with open(f"{file_name}.csv", mode="w") as csv_file:
                 field_names = ["Subreddit", "Submission Count", "Unique Users"]
-                writer = csv.writer(csv_file, delimiter="|")
+                writer = csv.writer(csv_file, delimiter=",")
                 writer.writerow(field_names)
                 for collected_subreddit in subreddits:
                     writer.writerow(
                         [
                             collected_subreddit,
-                            len(subreddits[collected_subreddit]["submissions"]),
+                            len(
+                                subreddits[collected_subreddit]["submissions"]
+                            ),
                             len(subreddits[collected_subreddit]["authors"]),
                         ]
                     )
@@ -135,14 +155,11 @@ class Analyzer(object):
                         len(subreddits[collected_subreddit]["authors"]),
                     ]
                 )
-        else:
-            return "Unsupported output type"
-
-            if sort_by == "users":
+            if sort_by.lower() == "users":
                 results_table.sortby = "Unique Users"
-            elif sort_by == "submissions" or sort_by == "posts":
+            elif sort_by.lower() == "submissions" or sort_by == "posts":
                 results_table.sortby = "Submission Count"
-            elif sort_by == "subreddit":
+            elif sort_by.lower() == "subreddit":
                 results_table.sortby = "Subreddit"
             else:
                 raise Exception("Unsupported sort_by value provided.")
