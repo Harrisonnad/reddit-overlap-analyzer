@@ -7,8 +7,6 @@ from resources.pushshift import Pushshift
 from resources.ascii import coffee
 from prettytable import PrettyTable
 import csv
-from tkinter import filedialog
-from tkinter import Tk
 
 
 class Analyzer(object):
@@ -87,14 +85,10 @@ class Analyzer(object):
         subreddits = {}
 
         for author in unique_authors:
-            try:
-                submissions = self.pushshift_client.get_reddit_submissions(
-                    author=author
-                )
-                authors[author] = submissions
-            except ConnectionError:
-                time.sleep(54)
-                continue
+            submissions = self.pushshift_client.get_reddit_submissions(
+                author=author
+            )
+            authors[author] = submissions
 
             for submission in submissions:
                 try:
@@ -117,24 +111,15 @@ class Analyzer(object):
                     subreddits[submission["subreddit"]]["authors"].append(
                         author
                     )
-            # time.sleep(1)
 
         if subreddit in subreddits:
             subreddits.pop(subreddit, None)
 
         if output.lower() == "csv":
-            start = datetime.fromtimestamp(start).strftime("%Y-%m-%d")
-            end = datetime.fromtimestamp(end).strftime("%Y-%m-%d")
-            root = Tk()
-            root.filename = filedialog.askdirectory(
-                initialdir="/", title="Select file"
-            )
-
-            file_name = subreddit + "-" + str(start) + "-" + str(end)
-            file_path = root.filename + "/" + file_name
-            with open(f"{file_path}.csv", mode="w") as csv_file:
+            file_name = input("Enter file name ")
+            with open(f"{file_name}.csv", mode="w") as csv_file:
                 field_names = ["Subreddit", "Submission Count", "Unique Users"]
-                writer = csv.writer(csv_file, delimiter="|")
+                writer = csv.writer(csv_file, delimiter=",")
                 writer.writerow(field_names)
                 for collected_subreddit in subreddits:
                     writer.writerow(
@@ -162,19 +147,17 @@ class Analyzer(object):
                         len(subreddits[collected_subreddit]["authors"]),
                     ]
                 )
-        else:
-            return "Unsupported output type"
 
-            if sort_by == "users":
+            results_table.reversesort = True
+
+            if sort_by.lower() == "users":
                 results_table.sortby = "Unique Users"
-            elif sort_by == "submissions" or sort_by == "posts":
+            elif sort_by.lower() == "submissions" or sort_by == "posts":
                 results_table.sortby = "Submission Count"
-            elif sort_by == "subreddit":
+            elif sort_by.lower() == "subreddit":
                 results_table.sortby = "Subreddit"
             else:
                 raise Exception("Unsupported sort_by value provided.")
-
-            results_table.reversesort = True
 
             print(
                 results_table.get_string(
@@ -183,6 +166,8 @@ class Analyzer(object):
                     end=top,
                 )
             )
+        else:
+            return "Unsupported output type"
 
 
 if __name__ == "__main__":
