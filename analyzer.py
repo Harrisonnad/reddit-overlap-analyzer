@@ -7,6 +7,8 @@ from resources.pushshift import Pushshift
 from resources.ascii import coffee
 from prettytable import PrettyTable
 import csv
+from tkinter import filedialog
+from tkinter import Tk
 
 
 class Analyzer(object):
@@ -116,8 +118,16 @@ class Analyzer(object):
             subreddits.pop(subreddit, None)
 
         if output.lower() == "csv":
-            file_name = input("Enter file name ")
-            with open(f"{file_name}.csv", mode="w") as csv_file:
+            start = datetime.fromtimestamp(start).strftime("%Y-%m-%d")
+            end = datetime.fromtimestamp(end).strftime("%Y-%m-%d")
+            root = Tk()
+            root.filename = filedialog.askdirectory(
+                initialdir="/", title="Select file"
+            )
+
+            file_name = subreddit + "-" + str(start) + "-" + str(end)
+            file_path = root.filename + "/" + file_name
+            with open(f"{file_path}.csv", mode="w") as csv_file:
                 field_names = ["Subreddit", "Submission Count", "Unique Users"]
                 writer = csv.writer(csv_file, delimiter=",")
                 writer.writerow(field_names)
